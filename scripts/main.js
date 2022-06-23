@@ -29,12 +29,12 @@ let currentPiece = [];
 let currentPieceIsFalling = true;
 
 //helper functions
-/*his function covnerts the array of div elements into two dimensional array.
+/*his function converts the array of div elements into two-dimensional array.
 This will make working with the board easier in the future
 */
 function convertBoard() {
     const board = document.getElementsByClassName('block');
-    const twoDimenstionalBoard = [
+    const twoDimensionalBoard = [
         [],
         [],
         [],
@@ -60,12 +60,12 @@ function convertBoard() {
 
     for (let i = 0; i < 20; i++) {
         for (let x = 0; x < 10; x++) {
-            twoDimenstionalBoard[i][x] = board[counter];
+            twoDimensionalBoard[i][x] = board[counter];
             counter++;
         }
     }
 
-    return twoDimenstionalBoard;
+    return twoDimensionalBoard;
 }
 
 //game functions
@@ -89,17 +89,17 @@ function synchronizePiecesWithBoard() {
 
 function addNewShapeToBoard(piece) {
     const shape = piece.shape;
-    let rij = 0;
-    let kolom = 0;
+    let row = 0;
+    let column = 0;
 
     for (let i = 0; i <= 1; i++) {
-        kolom = 0;
+        column = 0;
         for (let x = 3; x <= 6; x++) {
-            PIECES[i][x] = shape[rij][kolom] === 1 ? piece.color : 0;
-            shape[rij][kolom] === 1 ? currentPiece.push(new Coordinate(i, x)) : null;
-            kolom++;
+            PIECES[i][x] = shape[row][column] === 1 ? piece.color : 0;
+            shape[row][column] === 1 ? currentPiece.push(new Coordinate(i, x)) : null;
+            column++;
         }
-        rij++;
+        row++;
     }
 
 }
