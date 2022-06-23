@@ -26,6 +26,7 @@ const PIECES = [
 ];
 const BOARD = convertBoard();
 let currentPiece = [];
+let currentPieceIsFalling = true;
 
 //helper functions
 /*his function covnerts the array of div elements into two dimensional array.
@@ -107,16 +108,21 @@ function fallingCurrentPiece() {
     //gets the color of the current piece.
     let currentPlaceColorValue = PIECES[currentPiece[0].x][currentPiece[0].y];
 
-    //changing old positions to 0 and updating the coordinate. 0 -> there is no piece on that position.
-    currentPiece.forEach((coordinate) => {
-        PIECES[coordinate.x][coordinate.y] = 0;
-        coordinate.x = coordinate.x + 1;
-    })
+    currentPieceIsFalling = currentPiece.findIndex((e) => e.x === 19) === -1;
 
-    //updating the color of current position
-    currentPiece.forEach((coordinate) => {
-        PIECES[coordinate.x][coordinate.y] = currentPlaceColorValue;
-    });
+    if (currentPieceIsFalling) {
+        //changing old positions to 0 and updating the coordinate. 0 -> there is no piece on that position.
+        currentPiece.forEach((coordinate) => {
+            PIECES[coordinate.x][coordinate.y] = 0;
+            coordinate.x = coordinate.x + 1;
+        })
+
+        //updating the color of current position
+        currentPiece.forEach((coordinate) => {
+            PIECES[coordinate.x][coordinate.y] = currentPlaceColorValue;
+        });
+    }
+
 }
 
 function playTetris() {
@@ -125,7 +131,7 @@ function playTetris() {
     setInterval(() => {
         fallingCurrentPiece();
         synchronizePiecesWithBoard();
-    }, 1500);
+    }, 1000);
 }
 
 //game process
