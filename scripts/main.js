@@ -100,6 +100,31 @@ function moveCoordinatesDown() {
     })
 }
 
+function findLastRow() {
+    const rows = currentPiece.map(c => c.y);
+
+    return Math.max(...rows);
+}
+
+function checkFallingCurrentPiece() {
+    const index = currentPiece.findIndex((e) => e.y === 19);
+
+    if (index !== -1) {
+        return false;
+    } else {
+        const lastRow = findLastRow();
+        for (let i = 0; i < currentPiece.length; i++) {
+            if (currentPiece[i].y === lastRow) {
+                if (PIECES[currentPiece[i].y+1][currentPiece[i].x] !== 0) {
+                    return false;
+                }
+            }
+        }
+    }
+
+    return true;
+}
+
 //game functions
 function generateNewPiece() {
     const piece = new Piece()
@@ -124,6 +149,8 @@ function addNewShapeToBoard(piece) {
     let row = 0;
     let column = 0;
 
+    currentPiece = [];
+
     for (let i = 0; i <= 1; i++) {
         column = 0;
         for (let x = 3; x <= 6; x++) {
@@ -139,7 +166,9 @@ function fallingCurrentPiece(direction) {
     //gets the color of the current piece.
     const currentPlaceColorValue = PIECES[currentPiece[0].y][currentPiece[0].x];
 
-    currentPieceIsFalling = currentPiece.findIndex((e) => e.y === 19) === -1;
+    //currentPieceIsFalling = currentPiece.findIndex((e) => e.y === 19) === -1;
+    currentPieceIsFalling = checkFallingCurrentPiece();
+
     const canGoRight = currentPiece.findIndex((e) => e.x === 9) === -1;
     const canGoLeft = currentPiece.findIndex((e) => e.x === 0) === -1;
 
@@ -198,7 +227,6 @@ function rotate() {
 
 function playTetris() {
     generateNewPiece();
-
     window.addEventListener('keydown', (event) => {
         switch (event.keyCode) {
             case 37:
@@ -218,6 +246,10 @@ function playTetris() {
 
     setInterval(() => {
         fallingCurrentPiece('d');
+        if (!currentPieceIsFalling) {
+            currentPieceIsFalling = true;
+            generateNewPiece();
+        }
     }, 1000);
 }
 
