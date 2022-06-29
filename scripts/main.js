@@ -100,22 +100,15 @@ function moveCoordinatesDown() {
     })
 }
 
-function findLastRow() {
-    const rows = currentPiece.map(c => c.y);
-
-    return Math.max(...rows);
-}
-
 function checkFallingCurrentPiece() {
     const index = currentPiece.findIndex((e) => e.y === 19);
 
     if (index !== -1) {
         return false;
     } else {
-        const lastRow = findLastRow();
         for (let i = 0; i < currentPiece.length; i++) {
-            if (currentPiece[i].y === lastRow) {
-                if (PIECES[currentPiece[i].y + 1][currentPiece[i].x] !== 0) {
+            if(PIECES[currentPiece[i].y+1][currentPiece[i].x] !== 0) {
+                if(!currentPiece.some((coordinate) => coordinate.y === currentPiece[i].y+1 && coordinate.x === currentPiece[i].x)) {
                     return false;
                 }
             }
@@ -258,10 +251,10 @@ function rotate() {
         }
 
         //top wall
-        if(currentPiece.findIndex((coordinate) => coordinate.y < 0) !== -1) {
+        if (currentPiece.findIndex((coordinate) => coordinate.y < 0) !== -1) {
             do {
                 moveCoordinatesDown();
-            }while (currentPiece.some((coordinate) => coordinate.y <0))
+            } while (currentPiece.some((coordinate) => coordinate.y < 0))
         }
         //left wall
         if (currentPiece.findIndex((coordinate) => coordinate.x < 0) !== -1) {
