@@ -10,6 +10,7 @@ body {
     display: flex;
     justify-content: center;
     align-items: center;
+    gap: 75px;
 }
 .tetris-game {
     background-color: #15181d;
@@ -19,4 +20,10 @@ body {
 }
 .block {
     border: 1px solid #174151;
+}
+.game-info {
+    color: #009084
+}
+.game-info > p {
+    text-align: center;
 }
