@@ -1,5 +1,6 @@
 import {Piece} from '../modules/piece.js';
 import {Coordinate} from "../modules/coordinate.js";
+import {Level} from "../modules/level.js";
 
 //global variables and constants
 const PIECES = [
@@ -27,7 +28,10 @@ const PIECES = [
 const BOARD = convertBoard();
 let currentPiece = [];
 let currentPieceIsFalling = true;
-
+const SCORE_ELEMENT = document.getElementById("score");
+let score = 0
+const level = new Level();
+let interval;
 //helper functions
 /*his function converts the array of div elements into two-dimensional array.
 This will make working with the board easier in the future
@@ -107,8 +111,8 @@ function checkFallingCurrentPiece() {
         return false;
     } else {
         for (let i = 0; i < currentPiece.length; i++) {
-            if(PIECES[currentPiece[i].y+1][currentPiece[i].x] !== 0) {
-                if(!currentPiece.some((coordinate) => coordinate.y === currentPiece[i].y+1 && coordinate.x === currentPiece[i].x)) {
+            if (PIECES[currentPiece[i].y + 1][currentPiece[i].x] !== 0) {
+                if (!currentPiece.some((coordinate) => coordinate.y === currentPiece[i].y + 1 && coordinate.x === currentPiece[i].x)) {
                     return false;
                 }
             }
@@ -202,6 +206,20 @@ function removeFullRows(fullRows) {
     });
 }
 
+function changeScore(rowNumbers) {
+    if (rowNumbers === 1) {
+        score += 40 * (level.currentLevel + 1);
+    } else if (rowNumbers === 2) {
+        score += 100 * (level.currentLevel + 1);
+    } else if (rowNumbers === 3) {
+        score += 300 * (level.currentLevel + 1);
+    } else {
+        score += 400 * (level.currentLevel + 1);
+    }
+
+    SCORE_ELEMENT.innerText = score;
+}
+
 function checkFullRow() {
     let totalRow = 0;
     const fullRows = [];
@@ -221,14 +239,18 @@ function checkFullRow() {
 
     if (fullRows.length !== 0) {
         removeFullRows(fullRows);
-
+        changeScore(fullRows.length);
         for (let i = 0; i < fullRows.length; i++) {
             moveAllBlocksDown(fullRows);
+            level.increaseTotalLines();
         }
+
+        clearInterval(interval);
+        interval = setInterval(gameProcess,level.speed);
         synchronizePiecesWithBoard();
     }
-}
 
+}
 function rotate() {
     //if not square. Square doesn't need to be rotated
     if (PIECES[currentPiece[0].y][currentPiece[0].x] != '#fff21c' && currentPieceIsFalling) {
@@ -274,6 +296,16 @@ function rotate() {
     }
 }
 
+function gameProcess() {
+    fallingCurrentPiece('d');
+
+    if (!currentPieceIsFalling) {
+        checkFullRow();
+        currentPieceIsFalling = true;
+        generateNewPiece();
+    }
+}
+
 function playTetris() {
     generateNewPiece();
     window.addEventListener('keydown', (event) => {
@@ -283,6 +315,10 @@ function playTetris() {
                 break;
             case 40:
                 fallingCurrentPiece('d');
+                if(currentPieceIsFalling) {
+                    score += 1;
+                    SCORE_ELEMENT.innerText = score;
+                }
                 break;
             case 39:
                 fallingCurrentPiece('r');
@@ -293,15 +329,7 @@ function playTetris() {
         }
     });
 
-    setInterval(() => {
-        fallingCurrentPiece('d');
-
-        if (!currentPieceIsFalling) {
-            checkFullRow();
-            currentPieceIsFalling = true;
-            generateNewPiece();
-        }
-    }, 1000);
+    interval = setInterval(gameProcess, level.speed);
 }
 
 //game process
