@@ -4,7 +4,7 @@ export class Level {
     #numberOfLines;
 
     constructor() {
-        this.#currentLevel = 0;
+        this.#currentLevel = 15;
         this.#numberOfLines = 0;
     }
 
@@ -18,7 +18,7 @@ export class Level {
 
     increaseTotalLines() {
         this.#numberOfLines += 1;
-        if(this.#numberOfLines % 10 === 0) {
+        if(this.#numberOfLines % 10 === 0 && this.#currentLevel < 15) {
             this.#currentLevel += 1;
         }
     }
