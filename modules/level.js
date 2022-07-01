@@ -4,7 +4,7 @@ export class Level {
     #numberOfLines;
 
     constructor() {
-        this.#currentLevel = 15;
+        this.#currentLevel = 0;
         this.#numberOfLines = 0;
     }
 
