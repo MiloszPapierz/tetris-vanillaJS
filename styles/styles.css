@@ -18,12 +18,22 @@ body {
     grid-template-columns: repeat(10,30px);
     grid-template-rows: repeat(20,30px);
 }
-.block {
+.block,.next-piece-block {
     border: 1px solid #174151;
 }
 .game-info {
-    color: #009084
+    color: #009084;
+    display: flex;
+    flex-direction: column-reverse;
 }
-.game-info > p {
+.game-info p {
     text-align: center;
+}
+.next-piece {
+    display: grid;
+    grid-template-columns: repeat(4,30px);
+    grid-template-rows: repeat(3,30px);
+}
+.next-piece-block {
+    background-color: #15181d;
 }

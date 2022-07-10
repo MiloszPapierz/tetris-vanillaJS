@@ -25,9 +25,11 @@ const PIECES = [
     [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
     [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
 ];
-const BOARD = convertBoard();
+const BOARD = convertBoard(20, 10, 'block');
+const NEXT_PIECE_BOARD = convertBoard(3, 4, 'next-piece-block');
 let currentPiece = [];
 let currentPieceIsFalling = true;
+let pieces = [new Piece(),new Piece()];
 const SCORE_ELEMENT = document.getElementById("score");
 let score = 0
 const level = new Level();
@@ -36,34 +38,13 @@ let interval;
 /*his function converts the array of div elements into two-dimensional array.
 This will make working with the board easier in the future
 */
-function convertBoard() {
-    const board = document.getElementsByClassName('block');
-    const twoDimensionalBoard = [
-        [],
-        [],
-        [],
-        [],
-        [],
-        [],
-        [],
-        [],
-        [],
-        [],
-        [],
-        [],
-        [],
-        [],
-        [],
-        [],
-        [],
-        [],
-        [],
-        [],
-    ];
+function convertBoard(rowCount, columnCount, elements) {
+    const board = document.getElementsByClassName(elements);
+    const twoDimensionalBoard = Array(rowCount).fill(0).map(() => Array(columnCount).fill(0));
     let counter = 0;
 
-    for (let i = 0; i < 20; i++) {
-        for (let x = 0; x < 10; x++) {
+    for (let i = 0; i < rowCount; i++) {
+        for (let x = 0; x < columnCount; x++) {
             twoDimensionalBoard[i][x] = board[counter];
             counter++;
         }
@@ -124,9 +105,22 @@ function checkFallingCurrentPiece() {
 
 //game functions
 function generateNewPiece() {
-    const piece = new Piece()
-    addNewShapeToBoard(piece);
+    addShapeToNextBoard(pieces[pieces.length-1]);
+    addNewShapeToBoard(pieces.splice(0,1));
     synchronizePiecesWithBoard();
+    pieces.push(new Piece());
+}
+
+function addShapeToNextBoard(piece) {
+    for (let i = 0; i < 2; i++) {
+        for (let x = 0; x < NEXT_PIECE_BOARD[0].length; x++) {
+            if (piece.shape[i][x] === 1) {
+                NEXT_PIECE_BOARD[i+1][x].style.backgroundColor = piece.color;
+            } else {
+                NEXT_PIECE_BOARD[i+1][x].style.backgroundColor = "#15181d";
+            }
+        }
+    }
 }
 
 function synchronizePiecesWithBoard() {
@@ -141,7 +135,8 @@ function synchronizePiecesWithBoard() {
     }
 }
 
-function addNewShapeToBoard(piece) {
+function addNewShapeToBoard(pieceEl) {
+    const piece = pieceEl[0];
     const shape = piece.shape;
     let row = 0;
     let column = 0;
@@ -246,11 +241,12 @@ function checkFullRow() {
         }
 
         clearInterval(interval);
-        interval = setInterval(gameProcess,level.speed);
+        interval = setInterval(gameProcess, level.speed);
         synchronizePiecesWithBoard();
     }
 
 }
+
 function rotate() {
     //if not square. Square doesn't need to be rotated
     if (PIECES[currentPiece[0].y][currentPiece[0].x] != '#fff21c' && currentPieceIsFalling) {
@@ -315,7 +311,7 @@ function playTetris() {
                 break;
             case 40:
                 fallingCurrentPiece('d');
-                if(currentPieceIsFalling) {
+                if (currentPieceIsFalling) {
                     score += 1;
                     SCORE_ELEMENT.innerText = score;
                 }
