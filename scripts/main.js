@@ -25,7 +25,8 @@ const PIECES = [
     [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
     [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
 ];
-const BOARD = convertBoard();
+const BOARD = convertBoard(20,10,'block');
+const NEXT_PIECE_BOARD = convertBoard(3,4,'next-piece-block');
 let currentPiece = [];
 let currentPieceIsFalling = true;
 const SCORE_ELEMENT = document.getElementById("score");
@@ -36,34 +37,13 @@ let interval;
 /*his function converts the array of div elements into two-dimensional array.
 This will make working with the board easier in the future
 */
-function convertBoard() {
-    const board = document.getElementsByClassName('block');
-    const twoDimensionalBoard = [
-        [],
-        [],
-        [],
-        [],
-        [],
-        [],
-        [],
-        [],
-        [],
-        [],
-        [],
-        [],
-        [],
-        [],
-        [],
-        [],
-        [],
-        [],
-        [],
-        [],
-    ];
+function convertBoard(rowCount,columnCount,elements) {
+    const board = document.getElementsByClassName(elements);
+    const twoDimensionalBoard = Array(rowCount).fill(0).map(() => Array(columnCount).fill(0));
     let counter = 0;
 
-    for (let i = 0; i < 20; i++) {
-        for (let x = 0; x < 10; x++) {
+    for (let i = 0; i < rowCount; i++) {
+        for (let x = 0; x < columnCount; x++) {
             twoDimensionalBoard[i][x] = board[counter];
             counter++;
         }
@@ -251,6 +231,7 @@ function checkFullRow() {
     }
 
 }
+
 function rotate() {
     //if not square. Square doesn't need to be rotated
     if (PIECES[currentPiece[0].y][currentPiece[0].x] != '#fff21c' && currentPieceIsFalling) {
