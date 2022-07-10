@@ -29,7 +29,7 @@ const BOARD = convertBoard(20, 10, 'block');
 const NEXT_PIECE_BOARD = convertBoard(3, 4, 'next-piece-block');
 let currentPiece = [];
 let currentPieceIsFalling = true;
-let pieces = [new Piece(),new Piece()];
+let pieces = [new Piece(), new Piece()];
 const SCORE_ELEMENT = document.getElementById("score");
 let score = 0
 const level = new Level();
@@ -103,10 +103,40 @@ function checkFallingCurrentPiece() {
     return true;
 }
 
+function checkGoLeft() {
+    if (currentPiece.findIndex((e) => e.x === 0) === -1) {
+        for (let i = 0; i < currentPiece.length; i++) {
+            if (PIECES[currentPiece[i].y][currentPiece[i].x - 1] !== 0) {
+                if (!currentPiece.some((coordinate) => coordinate.y === currentPiece[i].y && coordinate.x === currentPiece[i].x - 1)) {
+                    return false;
+                }
+            }
+        }
+        return true;
+    }
+
+    return false;
+}
+
+function checkGoRight() {
+    if (currentPiece.findIndex((e) => e.x === 9) === -1) {
+        for (let i = 0; i < currentPiece.length; i++) {
+            if (PIECES[currentPiece[i].y][currentPiece[i].x + 1] !== 0) {
+                if (!currentPiece.some((coordinate) => coordinate.y === currentPiece[i].y && coordinate.x === currentPiece[i].x + 1)) {
+                    return false;
+                }
+            }
+        }
+        return true;
+    }
+
+    return false;
+}
+
 //game functions
 function generateNewPiece() {
-    addShapeToNextBoard(pieces[pieces.length-1]);
-    addNewShapeToBoard(pieces.splice(0,1));
+    addShapeToNextBoard(pieces[pieces.length - 1]);
+    addNewShapeToBoard(pieces.splice(0, 1));
     synchronizePiecesWithBoard();
     pieces.push(new Piece());
 }
@@ -115,9 +145,9 @@ function addShapeToNextBoard(piece) {
     for (let i = 0; i < 2; i++) {
         for (let x = 0; x < NEXT_PIECE_BOARD[0].length; x++) {
             if (piece.shape[i][x] === 1) {
-                NEXT_PIECE_BOARD[i+1][x].style.backgroundColor = piece.color;
+                NEXT_PIECE_BOARD[i + 1][x].style.backgroundColor = piece.color;
             } else {
-                NEXT_PIECE_BOARD[i+1][x].style.backgroundColor = "#15181d";
+                NEXT_PIECE_BOARD[i + 1][x].style.backgroundColor = "#15181d";
             }
         }
     }
@@ -157,25 +187,24 @@ function addNewShapeToBoard(pieceEl) {
 function fallingCurrentPiece(direction) {
     //gets the color of the current piece.
     const currentPlaceColorValue = PIECES[currentPiece[0].y][currentPiece[0].x];
-
-    //currentPieceIsFalling = currentPiece.findIndex((e) => e.y === 19) === -1;
+    
     currentPieceIsFalling = checkFallingCurrentPiece();
-
-    const canGoRight = currentPiece.findIndex((e) => e.x === 9) === -1;
-    const canGoLeft = currentPiece.findIndex((e) => e.x === 0) === -1;
+    const canGoRight = checkGoRight();
+    const canGoLeft = checkGoLeft();
 
     if (currentPieceIsFalling) {
-        //changing old positions to 0 and updating the coordinate. 0 -> there is no piece on that position.
         currentPiece.forEach((coordinate) => {
+            //changing old positions to 0 and updating the coordinate. 0 -> there is no piece on that position.
             PIECES[coordinate.y][coordinate.x] = 0;
-            if (direction === 'd') {
-                coordinate.y = coordinate.y + 1;
-            } else if (canGoLeft && direction === 'l') {
-                coordinate.x = coordinate.x - 1;
-            } else if (canGoRight && direction === 'r') {
-                coordinate.x = coordinate.x + 1;
-            }
         })
+
+        if (direction === 'd') {
+            moveCoordinatesDown();
+        } else if (canGoLeft && direction === 'l') {
+            moveCoordinatesToLeft();
+        } else if (canGoRight && direction === 'r') {
+            moveCoordinatesToRight();
+        }
 
         //updating the color of current position
         updatePiecesColor(currentPlaceColorValue);
