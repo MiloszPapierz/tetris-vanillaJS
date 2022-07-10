@@ -34,3 +34,6 @@ body {
     grid-template-columns: repeat(4,30px);
     grid-template-rows: repeat(3,30px);
 }
+.next-piece-block {
+    background-color: #15181d;
+}
