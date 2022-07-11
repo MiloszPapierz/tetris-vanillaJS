@@ -85,6 +85,12 @@ function moveCoordinatesDown() {
     })
 }
 
+function moveCoordinatesUp() {
+    currentPiece.forEach((coordinate) => {
+        coordinate.y = coordinate.y-1;
+    });
+}
+
 function checkFallingCurrentPiece() {
     const index = currentPiece.findIndex((e) => e.y === 19);
 
@@ -288,6 +294,11 @@ function rotate() {
         } else if (color == "#ec008b") {
             pivot = currentPiece[3];
         }
+        /*This has to be cloned like that.Spread operator doesn't work because there are nested objects
+        * https://stackoverflow.com/questions/59665766/array-still-following-reference-somehow-even-though-ive-passed-another-referenc
+        * .map used to convert object literals to ES6 class objects
+        * */
+        const coordinatesBeforeRotation = JSON.parse(JSON.stringify(currentPiece)).map((c) => new Coordinate(c.x,c.y));
 
         for (let i = 0; i < currentPiece.length; i++) {
             PIECES[currentPiece[i].y][currentPiece[i].x] = 0;
@@ -314,6 +325,17 @@ function rotate() {
             do {
                 moveCoordinatesToLeft();
             } while (currentPiece.some((coordinate) => coordinate.x > 9));
+        }
+        //bottom wall
+        if(currentPiece.findIndex((coordinate) => coordinate.y > 19) !==-1) {
+            do {
+                moveCoordinatesUp();
+            } while(currentPiece.some((coordinate) => coordinate.y >19));
+        }
+
+        //check if the piece after rotation collapse with another. If so don't rotate and go back to coordinates before rotation.
+        if(currentPiece.some((coordinate) => PIECES[coordinate.y][coordinate.x] !== 0)) {
+            currentPiece = [...coordinatesBeforeRotation];
         }
 
         updatePiecesColor(color);

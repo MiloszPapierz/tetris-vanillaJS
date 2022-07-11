@@ -22,4 +22,12 @@ export class Coordinate {
     set y(y) {
         this.#y = y;
     }
+
+    //needed for JSON.stringify function. This will specify the returned value
+    toJSON() {
+        return {
+            x: this.#x,
+            y: this.#y,
+        };
+    }
 }
