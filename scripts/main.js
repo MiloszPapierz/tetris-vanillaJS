@@ -29,6 +29,7 @@ const BOARD = convertBoard(20, 10, 'block');
 const NEXT_PIECE_BOARD = convertBoard(3, 4, 'next-piece-block');
 let currentPiece = [];
 let currentPieceIsFalling = true;
+let hardDropCoordinates = [];
 let pieces = [new Piece(), new Piece()];
 const SCORE_ELEMENT = document.getElementById("score");
 let score = 0
@@ -79,15 +80,15 @@ function moveCoordinatesToLeft() {
     })
 }
 
-function moveCoordinatesDown() {
-    currentPiece.forEach((coordinate) => {
+function moveCoordinatesDown(coordinatesToMove) {
+    coordinatesToMove.forEach((coordinate) => {
         coordinate.y += 1;
     })
 }
 
 function moveCoordinatesUp() {
     currentPiece.forEach((coordinate) => {
-        coordinate.y = coordinate.y-1;
+        coordinate.y = coordinate.y - 1;
     });
 }
 
@@ -193,30 +194,66 @@ function addNewShapeToBoard(pieceEl) {
 function fallingCurrentPiece(direction) {
     //gets the color of the current piece.
     const currentPlaceColorValue = PIECES[currentPiece[0].y][currentPiece[0].x];
-    
+
     currentPieceIsFalling = checkFallingCurrentPiece();
     const canGoRight = checkGoRight();
     const canGoLeft = checkGoLeft();
 
     if (currentPieceIsFalling) {
+        //this check has to happen before clearing old coordinates because of the implementation of rotate function
+        if(direction === 'u') {
+            rotate();
+        }
+
         currentPiece.forEach((coordinate) => {
-            //changing old positions to 0 and updating the coordinate. 0 -> there is no piece on that position.
+            //changing old positions to 0. 0 -> there is no piece on that position.
             PIECES[coordinate.y][coordinate.x] = 0;
         })
 
         if (direction === 'd') {
-            moveCoordinatesDown();
+            moveCoordinatesDown(currentPiece);
         } else if (canGoLeft && direction === 'l') {
             moveCoordinatesToLeft();
         } else if (canGoRight && direction === 'r') {
             moveCoordinatesToRight();
         }
 
+        clearHardDropCoordinateColors();
+        determineHardDropCoordinates();
+        setHardDropCoordinateColors(currentPlaceColorValue);
+
         //updating the color of current position
         updatePiecesColor(currentPlaceColorValue);
     }
 
     synchronizePiecesWithBoard();
+}
+
+function determineHardDropCoordinates() {
+    /*This has to be cloned like that.Spread operator doesn't work because there are nested objects
+    * https://stackoverflow.com/questions/59665766/array-still-following-reference-somehow-even-though-ive-passed-another-referenc
+    * .map used to convert object literals to ES6 class objects
+    * */
+    const copyOfCoordinates = JSON.parse(JSON.stringify(currentPiece)).map((c) => new Coordinate(c.x, c.y));
+
+    while (copyOfCoordinates.every((coordinate) => coordinate.y+1 <= 19 && PIECES[coordinate.y+1][coordinate.x] === 0)) {
+        moveCoordinatesDown(copyOfCoordinates);
+    }
+
+    hardDropCoordinates = [...copyOfCoordinates];
+}
+
+function setHardDropCoordinateColors(color) {
+    hardDropCoordinates.forEach((coordinate) => {
+        BOARD[coordinate.y][coordinate.x].style.border = `1px solid ${color}`;
+    })
+}
+
+function clearHardDropCoordinateColors() {
+    hardDropCoordinates.forEach((coordinate) => {
+        BOARD[coordinate.y][coordinate.x].style.border = "1px solid #174151";
+
+    })
 }
 
 function moveAllBlocksDown(fullRows) {
@@ -298,7 +335,7 @@ function rotate() {
         * https://stackoverflow.com/questions/59665766/array-still-following-reference-somehow-even-though-ive-passed-another-referenc
         * .map used to convert object literals to ES6 class objects
         * */
-        const coordinatesBeforeRotation = JSON.parse(JSON.stringify(currentPiece)).map((c) => new Coordinate(c.x,c.y));
+        const coordinatesBeforeRotation = JSON.parse(JSON.stringify(currentPiece)).map((c) => new Coordinate(c.x, c.y));
 
         for (let i = 0; i < currentPiece.length; i++) {
             PIECES[currentPiece[i].y][currentPiece[i].x] = 0;
@@ -311,7 +348,7 @@ function rotate() {
         //top wall
         if (currentPiece.findIndex((coordinate) => coordinate.y < 0) !== -1) {
             do {
-                moveCoordinatesDown();
+                moveCoordinatesDown(currentPiece);
             } while (currentPiece.some((coordinate) => coordinate.y < 0))
         }
         //left wall
@@ -327,14 +364,14 @@ function rotate() {
             } while (currentPiece.some((coordinate) => coordinate.x > 9));
         }
         //bottom wall
-        if(currentPiece.findIndex((coordinate) => coordinate.y > 19) !==-1) {
+        if (currentPiece.findIndex((coordinate) => coordinate.y > 19) !== -1) {
             do {
                 moveCoordinatesUp();
-            } while(currentPiece.some((coordinate) => coordinate.y >19));
+            } while (currentPiece.some((coordinate) => coordinate.y > 19));
         }
 
         //check if the piece after rotation collapse with another. If so don't rotate and go back to coordinates before rotation.
-        if(currentPiece.some((coordinate) => PIECES[coordinate.y][coordinate.x] !== 0)) {
+        if (currentPiece.some((coordinate) => PIECES[coordinate.y][coordinate.x] !== 0)) {
             currentPiece = [...coordinatesBeforeRotation];
         }
 
@@ -371,7 +408,7 @@ function playTetris() {
                 fallingCurrentPiece('r');
                 break;
             case 38:
-                rotate();
+                fallingCurrentPiece('u');
                 break;
         }
     });
