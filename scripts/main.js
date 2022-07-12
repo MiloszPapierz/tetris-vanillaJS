@@ -39,7 +39,8 @@ let interval;
 const END_GAME_ELEMENT = document.getElementById("end-game-element");
 const END_GAME_BUTTON = document.getElementById("play-again");
 let isGameOver = false;
-
+const highestScore = window.localStorage.getItem("score") === null ? null : window.localStorage.getItem("score");
+const HIGHEST_SCORE_ELEMENT = document.getElementById("highest-score");
 //helper functions
 /*his function converts the array of div elements into two-dimensional array.
 This will make working with the board easier in the future
@@ -410,6 +411,7 @@ function gameProcess() {
     if (isGameOver) {
         clearInterval(interval);
         END_GAME_ELEMENT.style.display = "block";
+        highestScore < score ? window.localStorage.setItem("score",score) : null;
         window.removeEventListener("keydown", eventListeners);
     } else {
         if (!currentPieceIsFalling) {
@@ -424,6 +426,7 @@ function gameProcess() {
 
 function playTetris() {
     generateNewPiece();
+    HIGHEST_SCORE_ELEMENT.innerText = highestScore === null ? 0 : highestScore;
     window.addEventListener('keydown', eventListeners = (event) => {
         switch (event.keyCode) {
             case 37:
