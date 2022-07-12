@@ -22,7 +22,7 @@ body {
     border: 1px solid #174151;
 }
 .game-info {
-    color: #009084;
+    color: #00C6AA;
     display: flex;
     flex-direction: column-reverse;
 }
@@ -36,4 +36,29 @@ body {
 }
 .next-piece-block {
     background-color: #15181d;
+}
+.end-game-container {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    text-align: center;
+    padding: 60px;
+    transform: translate(-50%,-50%);
+    border-radius: 5px;
+    color: #00C6AA;
+    background-color: #174151;
+    display: none;
+}
+.end-game-container h1 {
+    font-size: 45px;
+}
+#play-again {
+    font-size: 16px;
+    background-color: transparent;
+    border: 1px solid #00C6AA;
+    outline: none;
+    padding: 12px;
+    color: #00C6AA;
+    border-radius: 5px;
+    cursor: pointer;
 }
