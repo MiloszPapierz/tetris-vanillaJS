@@ -92,15 +92,15 @@ function moveCoordinatesUp() {
     });
 }
 
-function checkFallingCurrentPiece() {
-    const index = currentPiece.findIndex((e) => e.y === 19);
+function checkFallingPiece(piece) {
+    const index = piece.findIndex((e) => e.y === 19);
 
     if (index !== -1) {
         return false;
     } else {
-        for (let i = 0; i < currentPiece.length; i++) {
-            if (PIECES[currentPiece[i].y + 1][currentPiece[i].x] !== 0) {
-                if (!currentPiece.some((coordinate) => coordinate.y === currentPiece[i].y + 1 && coordinate.x === currentPiece[i].x)) {
+        for (let i = 0; i < piece.length; i++) {
+            if (PIECES[piece[i].y + 1][piece[i].x] !== 0) {
+                if (!piece.some((coordinate) => coordinate.y === piece[i].y + 1 && coordinate.x === piece[i].x)) {
                     return false;
                 }
             }
@@ -143,9 +143,12 @@ function checkGoRight() {
 //game functions
 function generateNewPiece() {
     addShapeToNextBoard(pieces[pieces.length - 1]);
-    addNewShapeToBoard(pieces.splice(0, 1));
+    const piecesEl = pieces.splice(0, 1);
+    addNewShapeToBoard(piecesEl);
     synchronizePiecesWithBoard();
     pieces.push(new Piece());
+    determineHardDropCoordinates();
+    setHardDropCoordinateColors(piecesEl[0].color);
 }
 
 function addShapeToNextBoard(piece) {
@@ -195,13 +198,13 @@ function fallingCurrentPiece(direction) {
     //gets the color of the current piece.
     const currentPlaceColorValue = PIECES[currentPiece[0].y][currentPiece[0].x];
 
-    currentPieceIsFalling = checkFallingCurrentPiece();
+    currentPieceIsFalling = checkFallingPiece(currentPiece);
     const canGoRight = checkGoRight();
     const canGoLeft = checkGoLeft();
 
     if (currentPieceIsFalling) {
         //this check has to happen before clearing old coordinates because of the implementation of rotate function
-        if(direction === 'u') {
+        if (direction === 'u') {
             rotate();
         }
 
@@ -236,7 +239,7 @@ function determineHardDropCoordinates() {
     * */
     const copyOfCoordinates = JSON.parse(JSON.stringify(currentPiece)).map((c) => new Coordinate(c.x, c.y));
 
-    while (copyOfCoordinates.every((coordinate) => coordinate.y+1 <= 19 && PIECES[coordinate.y+1][coordinate.x] === 0)) {
+    while (checkFallingPiece(copyOfCoordinates)) {
         moveCoordinatesDown(copyOfCoordinates);
     }
 
@@ -245,7 +248,7 @@ function determineHardDropCoordinates() {
 
 function setHardDropCoordinateColors(color) {
     hardDropCoordinates.forEach((coordinate) => {
-        BOARD[coordinate.y][coordinate.x].style.border = `1px solid ${color}`;
+        BOARD[coordinate.y][coordinate.x].style.border = `1px solid ${currentPiece.some((c) => c.y === coordinate.y && c.x === coordinate.x) ? "#174151" : color}`;
     })
 }
 
