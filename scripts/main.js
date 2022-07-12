@@ -27,6 +27,7 @@ const PIECES = [
 ];
 const BOARD = convertBoard(20, 10, 'block');
 const NEXT_PIECE_BOARD = convertBoard(3, 4, 'next-piece-block');
+let eventListeners;
 let currentPiece = [];
 let currentPieceIsFalling = true;
 let hardDropCoordinates = [];
@@ -35,6 +36,10 @@ const SCORE_ELEMENT = document.getElementById("score");
 let score = 0
 const level = new Level();
 let interval;
+const END_GAME_ELEMENT = document.getElementById("end-game-element");
+const END_GAME_BUTTON = document.getElementById("play-again");
+let isGameOver = false;
+
 //helper functions
 /*his function converts the array of div elements into two-dimensional array.
 This will make working with the board easier in the future
@@ -182,7 +187,6 @@ function addNewShapeToBoard(pieceEl) {
     let column = 0;
 
     currentPiece = [];
-
     for (let i = 0; i <= 1; i++) {
         column = 0;
         for (let x = 3; x <= 6; x++) {
@@ -192,6 +196,9 @@ function addNewShapeToBoard(pieceEl) {
         }
         row++;
     }
+
+    moveCoordinatesDown(currentPiece);
+    checkFallingPiece(currentPiece) === false ? isGameOver = true: moveCoordinatesUp();
 }
 
 function fallingCurrentPiece(direction) {
@@ -271,7 +278,7 @@ function hardDrop() {
     synchronizePiecesWithBoard();
     clearHardDropCoordinateColors();
     currentPieceIsFalling = false;
-    score += (maxRowNumber-minRowNumber) *2;
+    score += (maxRowNumber - minRowNumber) * 2;
     SCORE_ELEMENT.innerText = score;
 }
 
@@ -400,17 +407,24 @@ function rotate() {
 }
 
 function gameProcess() {
-    if (!currentPieceIsFalling) {
-        checkFullRow(false);
-        currentPieceIsFalling = true;
-        generateNewPiece();
+    if (isGameOver) {
+        clearInterval(interval);
+        END_GAME_ELEMENT.style.display = "block";
+        window.removeEventListener("keydown", eventListeners);
+    } else {
+        if (!currentPieceIsFalling) {
+            checkFullRow();
+            currentPieceIsFalling = true;
+            generateNewPiece();
+        }
     }
+
     fallingCurrentPiece('d');
 }
 
 function playTetris() {
     generateNewPiece();
-    window.addEventListener('keydown', (event) => {
+    window.addEventListener('keydown', eventListeners = (event) => {
         switch (event.keyCode) {
             case 37:
                 fallingCurrentPiece('l');
@@ -433,7 +447,9 @@ function playTetris() {
                 break;
         }
     });
-
+    END_GAME_BUTTON.addEventListener("click",() => {
+        window.top.location.reload();
+    })
     interval = setInterval(gameProcess, level.speed);
 }
 
