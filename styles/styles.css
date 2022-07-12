@@ -24,10 +24,7 @@ body {
 .game-info {
     color: #00C6AA;
     display: flex;
-    flex-direction: column-reverse;
-}
-.game-info p {
-    text-align: center;
+    flex-direction: column;
 }
 .next-piece {
     display: grid;
@@ -61,4 +58,9 @@ body {
     color: #00C6AA;
     border-radius: 5px;
     cursor: pointer;
+}
+
+h1 {
+    color: #00C6AA;
+    font-size: 35px;
 }
