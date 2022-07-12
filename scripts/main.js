@@ -259,6 +259,22 @@ function clearHardDropCoordinateColors() {
     })
 }
 
+function hardDrop() {
+    const maxRowNumber = hardDropCoordinates[0].y;
+    const minRowNumber = currentPiece[0].y;
+    const color = PIECES[currentPiece[0].y][currentPiece[0].x];
+    currentPiece.forEach((coordinate) => {
+        PIECES[coordinate.y][coordinate.x] = 0;
+    });
+    currentPiece = [...hardDropCoordinates];
+    updatePiecesColor(color);
+    synchronizePiecesWithBoard();
+    clearHardDropCoordinateColors();
+    currentPieceIsFalling = false;
+    score += (maxRowNumber-minRowNumber) *2;
+    SCORE_ELEMENT.innerText = score;
+}
+
 function moveAllBlocksDown(fullRows) {
     let old = [...PIECES];
     PIECES[0] = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
@@ -384,13 +400,12 @@ function rotate() {
 }
 
 function gameProcess() {
-    fallingCurrentPiece('d');
-
     if (!currentPieceIsFalling) {
-        checkFullRow();
+        checkFullRow(false);
         currentPieceIsFalling = true;
         generateNewPiece();
     }
+    fallingCurrentPiece('d');
 }
 
 function playTetris() {
@@ -412,6 +427,9 @@ function playTetris() {
                 break;
             case 38:
                 fallingCurrentPiece('u');
+                break;
+            case 32:
+                hardDrop();
                 break;
         }
     });
