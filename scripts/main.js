@@ -3,28 +3,7 @@ import {Coordinate} from "../modules/coordinate.js";
 import {Level} from "../modules/level.js";
 
 //global variables and constants
-const PIECES = [
-    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-];
+const PIECES = Array(20).fill(0).map(() => Array(10).fill(0));
 const BOARD = convertBoard(20, 10, 'block');
 const NEXT_PIECE_BOARD = convertBoard(3, 4, 'next-piece-block');
 let eventListeners;
@@ -74,13 +53,13 @@ function updatePiecesColor(color) {
     });
 }
 
-function moveCoordinatesToRight() {
+function moveCurrentPieceToRight() {
     currentPiece.forEach((coordinate) => {
         coordinate.x += 1;
     })
 }
 
-function moveCoordinatesToLeft() {
+function moveCurrentPieceToLeft() {
     currentPiece.forEach((coordinate) => {
         coordinate.x -= 1;
     })
@@ -92,7 +71,7 @@ function moveCoordinatesDown(coordinatesToMove) {
     })
 }
 
-function moveCoordinatesUp() {
+function moveCurrentPieceUp() {
     currentPiece.forEach((coordinate) => {
         coordinate.y = coordinate.y - 1;
     });
@@ -146,27 +125,34 @@ function checkGoRight() {
     return false;
 }
 
+function clearCurrentPieceOnBoard() {
+    currentPiece.forEach((coordinate) => {
+        //changing old positions to 0. 0 -> there is no piece on that position.
+        PIECES[coordinate.y][coordinate.x] = 0;
+    })
+}
+
 //game functions
 function generateNewPiece() {
     addShapeToNextBoard(pieces[pieces.length - 1]);
-    const piecesEl = pieces.splice(0, 1);
+    const piecesEl = pieces.splice(0, 1)[0];
     addNewShapeToBoard(piecesEl);
     synchronizePiecesWithBoard();
     pieces.push(new Piece());
     determineHardDropCoordinates();
-    setHardDropCoordinateColors(piecesEl[0].color);
+    setHardDropCoordinateColors(piecesEl.color);
 }
 
 function addShapeToNextBoard(piece) {
-    for (let i = 0; i < 2; i++) {
-        for (let x = 0; x < NEXT_PIECE_BOARD[0].length; x++) {
-            if (piece.shape[i][x] === 1) {
-                NEXT_PIECE_BOARD[i + 1][x].style.backgroundColor = piece.color;
-            } else {
-                NEXT_PIECE_BOARD[i + 1][x].style.backgroundColor = "#15181d";
-            }
+    for(let i=0;i<NEXT_PIECE_BOARD.length;i++) {
+        for(let x=0;x<NEXT_PIECE_BOARD[i].length;x++) {
+            NEXT_PIECE_BOARD[i][x].style.backgroundColor = "#15181d";
         }
     }
+    const color = piece.color;
+    piece.shape.forEach((coordinate) => {
+       NEXT_PIECE_BOARD[coordinate.y+1][coordinate.x-3].style.backgroundColor = color;
+    });
 }
 
 function synchronizePiecesWithBoard() {
@@ -182,55 +168,45 @@ function synchronizePiecesWithBoard() {
 }
 
 function addNewShapeToBoard(pieceEl) {
-    const piece = pieceEl[0];
-    const shape = piece.shape;
-    let row = 0;
-    let column = 0;
+    const shape = pieceEl.shape;
+    const color = pieceEl.color;
 
-    currentPiece = [];
-    for (let i = 0; i <= 1; i++) {
-        column = 0;
-        for (let x = 3; x <= 6; x++) {
-            PIECES[i][x] = shape[row][column] === 1 ? piece.color : 0;
-            shape[row][column] === 1 ? currentPiece.push(new Coordinate(x, i)) : null;
-            column++;
-        }
-        row++;
-    }
+    shape.forEach((coordinate) => {
+        PIECES[coordinate.y][coordinate.x] = color;
+    });
+
+    currentPiece = JSON.parse(JSON.stringify(shape)).map((c) => new Coordinate(c.x, c.y));
 
     moveCoordinatesDown(currentPiece);
     if (!checkFallingPiece(currentPiece)) {
         isGameOver = true;
     }
 
-    moveCoordinatesUp();
+    moveCurrentPieceUp();
 }
 
-function fallingCurrentPiece(direction) {
-    //gets the color of the current piece.
-    const currentPlaceColorValue = PIECES[currentPiece[0].y][currentPiece[0].x];
-
+function pieceMovement(direction) {
     currentPieceIsFalling = checkFallingPiece(currentPiece);
-    const canGoRight = checkGoRight();
-    const canGoLeft = checkGoLeft();
 
     if (currentPieceIsFalling) {
+        //gets the color of the current piece.
+        const currentPlaceColorValue = PIECES[currentPiece[0].y][currentPiece[0].x];
+        const canGoRight = checkGoRight();
+        const canGoLeft = checkGoLeft();
+
         //this check has to happen before clearing old coordinates because of the implementation of rotate function
         if (direction === 'u') {
             rotate();
         }
 
-        currentPiece.forEach((coordinate) => {
-            //changing old positions to 0. 0 -> there is no piece on that position.
-            PIECES[coordinate.y][coordinate.x] = 0;
-        })
+        clearCurrentPieceOnBoard();
 
         if (direction === 'd') {
             moveCoordinatesDown(currentPiece);
         } else if (canGoLeft && direction === 'l') {
-            moveCoordinatesToLeft();
+            moveCurrentPieceToLeft();
         } else if (canGoRight && direction === 'r') {
-            moveCoordinatesToRight();
+            moveCurrentPieceToRight();
         }
 
         clearHardDropCoordinateColors();
@@ -275,9 +251,7 @@ function hardDrop() {
     const maxRowNumber = hardDropCoordinates[0].y;
     const minRowNumber = currentPiece[0].y;
     const color = PIECES[currentPiece[0].y][currentPiece[0].x];
-    currentPiece.forEach((coordinate) => {
-        PIECES[coordinate.y][coordinate.x] = 0;
-    });
+    clearCurrentPieceOnBoard();
     currentPiece = [...hardDropCoordinates];
     updatePiecesColor(color);
     synchronizePiecesWithBoard();
@@ -328,7 +302,6 @@ function checkFullRow() {
     }
 
     if (fullRows.length !== 0) {
-        //removeFullRows(fullRows);
         changeScore(fullRows.length);
         for (let i = 0; i < fullRows.length; i++) {
             moveAllBlocksDown(fullRows);
@@ -344,8 +317,8 @@ function checkFullRow() {
 
 function rotate() {
     //if not square. Square doesn't need to be rotated
-    if (PIECES[currentPiece[0].y][currentPiece[0].x] != '#fff21c' && currentPieceIsFalling) {
-        const color = PIECES[currentPiece[0].y][currentPiece[0].x];
+    const color = PIECES[currentPiece[0].y][currentPiece[0].x];
+    if (color !== '#fff21c' && currentPieceIsFalling) {
         let pivot;
         if (color == "#f6921e" || color == "#ec1b24" || color == "#8ac43e") {
             pivot = currentPiece[1];
@@ -377,19 +350,19 @@ function rotate() {
         //left wall
         if (currentPiece.findIndex((coordinate) => coordinate.x < 0) !== -1) {
             do {
-                moveCoordinatesToRight();
+                moveCurrentPieceToRight();
             } while (currentPiece.some((coordinate) => coordinate.x < 0));
         }
         //right wall
         if (currentPiece.findIndex((coordinate) => coordinate.x > 9) !== -1) {
             do {
-                moveCoordinatesToLeft();
+                moveCurrentPieceToLeft();
             } while (currentPiece.some((coordinate) => coordinate.x > 9));
         }
         //bottom wall
         if (currentPiece.findIndex((coordinate) => coordinate.y > 19) !== -1) {
             do {
-                moveCoordinatesUp();
+                moveCurrentPieceUp();
             } while (currentPiece.some((coordinate) => coordinate.y > 19));
         }
 
@@ -410,7 +383,7 @@ function gameProcess() {
         highestScore < score ? window.localStorage.setItem("score",score) : null;
         window.removeEventListener("keydown", eventListeners);
     } else {
-        fallingCurrentPiece('d');
+        pieceMovement('d');
         if (!currentPieceIsFalling) {
             checkFullRow();
             currentPieceIsFalling = true;
@@ -425,20 +398,20 @@ function playTetris() {
     window.addEventListener('keydown', eventListeners = (event) => {
         switch (event.keyCode) {
             case 37:
-                fallingCurrentPiece('l');
+                pieceMovement('l');
                 break;
             case 40:
-                fallingCurrentPiece('d');
+                pieceMovement('d');
                 if (currentPieceIsFalling) {
                     score += 1;
                     SCORE_ELEMENT.innerText = score;
                 }
                 break;
             case 39:
-                fallingCurrentPiece('r');
+                pieceMovement('r');
                 break;
             case 38:
-                fallingCurrentPiece('u');
+                pieceMovement('u');
                 break;
             case 32:
                 hardDrop();
@@ -452,4 +425,4 @@ function playTetris() {
 }
 
 //game process
-playTetris();
+window.onload =  playTetris;
