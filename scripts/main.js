@@ -418,14 +418,13 @@ function gameProcess() {
         highestScore < score ? window.localStorage.setItem("score",score) : null;
         window.removeEventListener("keydown", eventListeners);
     } else {
+        fallingCurrentPiece('d');
         if (!currentPieceIsFalling) {
             checkFullRow();
             currentPieceIsFalling = true;
             generateNewPiece();
         }
     }
-
-    fallingCurrentPiece('d');
 }
 
 function playTetris() {
