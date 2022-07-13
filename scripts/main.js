@@ -296,14 +296,6 @@ function moveAllBlocksDown(fullRows) {
 
 }
 
-function removeFullRows(fullRows) {
-    fullRows.forEach((row) => {
-        for (let i = 0; i <= 9; i++) {
-            PIECES[row][i] = 0;
-        }
-    });
-}
-
 function changeScore(rowNumbers) {
     if (rowNumbers === 1) {
         score += 40 * (level.currentLevel + 1);
@@ -336,7 +328,7 @@ function checkFullRow() {
     }
 
     if (fullRows.length !== 0) {
-        removeFullRows(fullRows);
+        //removeFullRows(fullRows);
         changeScore(fullRows.length);
         for (let i = 0; i < fullRows.length; i++) {
             moveAllBlocksDown(fullRows);
