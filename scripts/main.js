@@ -199,7 +199,11 @@ function addNewShapeToBoard(pieceEl) {
     }
 
     moveCoordinatesDown(currentPiece);
-    checkFallingPiece(currentPiece) === false ? isGameOver = true: moveCoordinatesUp();
+    if (!checkFallingPiece(currentPiece)) {
+        isGameOver = true;
+    }
+
+    moveCoordinatesUp();
 }
 
 function fallingCurrentPiece(direction) {
