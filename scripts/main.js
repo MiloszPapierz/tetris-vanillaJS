@@ -135,24 +135,24 @@ function clearCurrentPieceOnBoard() {
 //game functions
 function generateNewPiece() {
     addShapeToNextBoard(pieces[pieces.length - 1]);
-    const piecesEl = pieces.splice(0, 1);
+    const piecesEl = pieces.splice(0, 1)[0];
     addNewShapeToBoard(piecesEl);
     synchronizePiecesWithBoard();
     pieces.push(new Piece());
     determineHardDropCoordinates();
-    setHardDropCoordinateColors(piecesEl[0].color);
+    setHardDropCoordinateColors(piecesEl.color);
 }
 
 function addShapeToNextBoard(piece) {
-    for (let i = 0; i < 2; i++) {
-        for (let x = 0; x < NEXT_PIECE_BOARD[0].length; x++) {
-            if (piece.shape[i][x] === 1) {
-                NEXT_PIECE_BOARD[i + 1][x].style.backgroundColor = piece.color;
-            } else {
-                NEXT_PIECE_BOARD[i + 1][x].style.backgroundColor = "#15181d";
-            }
+    for(let i=0;i<NEXT_PIECE_BOARD.length;i++) {
+        for(let x=0;x<NEXT_PIECE_BOARD[i].length;x++) {
+            NEXT_PIECE_BOARD[i][x].style.backgroundColor = "#15181d";
         }
     }
+    const color = piece.color;
+    piece.shape.forEach((coordinate) => {
+       NEXT_PIECE_BOARD[coordinate.y+1][coordinate.x-3].style.backgroundColor = color;
+    });
 }
 
 function synchronizePiecesWithBoard() {
@@ -168,21 +168,14 @@ function synchronizePiecesWithBoard() {
 }
 
 function addNewShapeToBoard(pieceEl) {
-    const piece = pieceEl[0];
-    const shape = piece.shape;
-    let row = 0;
-    let column = 0;
+    const shape = pieceEl.shape;
+    const color = pieceEl.color;
 
-    currentPiece = [];
-    for (let i = 0; i <= 1; i++) {
-        column = 0;
-        for (let x = 3; x <= 6; x++) {
-            PIECES[i][x] = shape[row][column] === 1 ? piece.color : 0;
-            shape[row][column] === 1 ? currentPiece.push(new Coordinate(x, i)) : null;
-            column++;
-        }
-        row++;
-    }
+    shape.forEach((coordinate) => {
+        PIECES[coordinate.y][coordinate.x] = color;
+    });
+
+    currentPiece = JSON.parse(JSON.stringify(shape)).map((c) => new Coordinate(c.x, c.y));
 
     moveCoordinatesDown(currentPiece);
     if (!checkFallingPiece(currentPiece)) {
