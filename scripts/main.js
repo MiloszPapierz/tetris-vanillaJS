@@ -47,6 +47,7 @@ function yPivot(pivot, xCell) {
     return pivot.y - pivot.x + xCell;
 }
 
+//Sets the color of the current piece on the board
 function updatePiecesColor(color) {
     currentPiece.forEach((coordinate) => {
         PIECES[coordinate.y][coordinate.x] = color;
@@ -65,6 +66,7 @@ function moveCurrentPieceToLeft() {
     })
 }
 
+//Moves the given coordinates down by one
 function moveCoordinatesDown(coordinatesToMove) {
     coordinatesToMove.forEach((coordinate) => {
         coordinate.y += 1;
@@ -77,6 +79,7 @@ function moveCurrentPieceUp() {
     });
 }
 
+//Checks if the given piece(tetromino) can go down by one. It returns a boolean
 function checkFallingPiece(piece) {
     const index = piece.findIndex((e) => e.y === 19);
 
@@ -95,6 +98,7 @@ function checkFallingPiece(piece) {
     return true;
 }
 
+//Checks if currentPiece can go one coordinate to the left
 function checkGoLeft() {
     if (currentPiece.findIndex((e) => e.x === 0) === -1) {
         for (let i = 0; i < currentPiece.length; i++) {
@@ -110,6 +114,7 @@ function checkGoLeft() {
     return false;
 }
 
+//Checks if currentPiece can go one coordinate to the right
 function checkGoRight() {
     if (currentPiece.findIndex((e) => e.x === 9) === -1) {
         for (let i = 0; i < currentPiece.length; i++) {
@@ -125,6 +130,7 @@ function checkGoRight() {
     return false;
 }
 
+//Sets the coordinates on board to 0. 0-> there is no block on this position. It is used to clear the board of the old position of a tetromino(after it changed position)
 function clearCurrentPieceOnBoard() {
     currentPiece.forEach((coordinate) => {
         //changing old positions to 0. 0 -> there is no piece on that position.
@@ -144,6 +150,7 @@ function generateNewPiece() {
 }
 
 function addShapeToNextBoard(piece) {
+    //first we need to clear the old board
     for(let i=0;i<NEXT_PIECE_BOARD.length;i++) {
         for(let x=0;x<NEXT_PIECE_BOARD[i].length;x++) {
             NEXT_PIECE_BOARD[i][x].style.backgroundColor = "#15181d";
@@ -155,6 +162,7 @@ function addShapeToNextBoard(piece) {
     });
 }
 
+//Used to synchronize PIECES(backend) with BOARD(frontend)
 function synchronizePiecesWithBoard() {
     for (let i = 0; i < 20; i++) {
         for (let x = 0; x < 10; x++) {
@@ -177,11 +185,13 @@ function addNewShapeToBoard(pieceEl) {
 
     currentPiece = JSON.parse(JSON.stringify(shape)).map((c) => new Coordinate(c.x, c.y));
 
+    //checks if moving currentPiece down by one wouldn't end the game. If so set isGameOver to true.
     moveCoordinatesDown(currentPiece);
     if (!checkFallingPiece(currentPiece)) {
         isGameOver = true;
     }
 
+    //moves currentPiece back to the starting position
     moveCurrentPieceUp();
 }
 
@@ -199,6 +209,7 @@ function pieceMovement(direction) {
             rotate();
         }
 
+        //clear old coordinates
         clearCurrentPieceOnBoard();
 
         if (direction === 'd') {
@@ -209,6 +220,7 @@ function pieceMovement(direction) {
             moveCurrentPieceToRight();
         }
 
+        //after movement clear old hard drop coordinates,calculate new ones and set them.
         clearHardDropCoordinateColors();
         determineHardDropCoordinates();
         setHardDropCoordinateColors(currentPlaceColorValue);
@@ -223,7 +235,7 @@ function pieceMovement(direction) {
 function determineHardDropCoordinates() {
     /*This has to be cloned like that.Spread operator doesn't work because there are nested objects
     * https://stackoverflow.com/questions/59665766/array-still-following-reference-somehow-even-though-ive-passed-another-referenc
-    * .map used to convert object literals to ES6 class objects
+    * map used to convert object literals to ES6 class objects
     * */
     const copyOfCoordinates = JSON.parse(JSON.stringify(currentPiece)).map((c) => new Coordinate(c.x, c.y));
 
@@ -234,12 +246,14 @@ function determineHardDropCoordinates() {
     hardDropCoordinates = [...copyOfCoordinates];
 }
 
+//Places a border color on the board for hard drop coordinates
 function setHardDropCoordinateColors(color) {
     hardDropCoordinates.forEach((coordinate) => {
         BOARD[coordinate.y][coordinate.x].style.border = `1px solid ${currentPiece.some((c) => c.y === coordinate.y && c.x === coordinate.x) ? "#174151" : color}`;
     })
 }
 
+//Sets normal border color for hard drop coordinates(before calculating new coordinates)
 function clearHardDropCoordinateColors() {
     hardDropCoordinates.forEach((coordinate) => {
         BOARD[coordinate.y][coordinate.x].style.border = "1px solid #174151";
@@ -261,6 +275,7 @@ function hardDrop() {
     SCORE_ELEMENT.innerText = score;
 }
 
+//moves all rows down by one. It is used after removing a full row
 function moveAllBlocksDown(fullRows) {
     let old = [...PIECES];
     PIECES[0] = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
@@ -308,6 +323,7 @@ function checkFullRow() {
             level.increaseTotalLines();
         }
 
+        //if min 1 row was full remove the timer and sets new one because there could be a new timer speed
         clearInterval(interval);
         interval = setInterval(gameProcess, level.speed);
         synchronizePiecesWithBoard();
@@ -319,6 +335,7 @@ function rotate() {
     //if not square. Square doesn't need to be rotated
     const color = PIECES[currentPiece[0].y][currentPiece[0].x];
     if (color !== '#fff21c' && currentPieceIsFalling) {
+        //determines the block that will be used to rotate other blocks.
         let pivot;
         if (color == "#f6921e" || color == "#ec1b24" || color == "#8ac43e") {
             pivot = currentPiece[1];
@@ -341,6 +358,7 @@ function rotate() {
             [currentPiece[i].x, currentPiece[i].y] = [newX, newY];
         }
 
+        //wall kicks
         //top wall
         if (currentPiece.findIndex((coordinate) => coordinate.y < 0) !== -1) {
             do {
@@ -366,7 +384,7 @@ function rotate() {
             } while (currentPiece.some((coordinate) => coordinate.y > 19));
         }
 
-        //check if the piece after rotation collapse with another. If so don't rotate and go back to coordinates before rotation.
+        //check if the piece after rotation collapse with another. If so don't rotate and go back to coordinate before rotation.
         if (currentPiece.some((coordinate) => PIECES[coordinate.y][coordinate.x] !== 0)) {
             currentPiece = [...coordinatesBeforeRotation];
         }
