@@ -2,9 +2,11 @@
 This is a small project where I made tetris with pure JavaScript. There aren't any additional frameworks/libraries used. By making this project I wanted to test and improve my JavaScript skills.
 
 ## How to play?
+Just open this link: https://miloszpapierz.github.io/tetris-vanillaJS/
+</br>OR
 1. Go to a directory where you want to store the files
 2. Type ```git clone https://github.com/MiloszPapierz/tetris-vanillaJS.git``` in your cmd or git bash
-3. Open index.html
+3. Open the index.html file using a local web server (for example live server extension in vscode). It has to be opened like that because the script uses modules.
 
 ## Game controls
 * &uarr; Rotate tetromino
